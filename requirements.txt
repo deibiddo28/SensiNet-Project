@@ -1,0 +1,12 @@
+torch
+torchvision
+timm
+pandas
+numpy
+opencv-python-headless
+matplotlib
+scikit-learn
+pillow
+dataset-tools
+supervisely
+tqdm
