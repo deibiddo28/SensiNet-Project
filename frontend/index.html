@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" x-data="{ darkMode: localStorage.getItem('theme') === 'dark' || !localStorage.getItem('theme') }" 
+      :class="{ 'dark': darkMode }" 
+      x-init="$watch('darkMode', val => localStorage.setItem('theme', val ? 'dark' : 'light'))">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,10 +19,8 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        clincal_bg: '#0F172A', // Slate 900
-                        clincal_panel: '#1E293B', // Slate 800
-                        clincal_accent: '#38BDF8', // Sky 400
-                        clincal_danger: '#F87171'  // Red 400
+                        clincal_accent: '#38BDF8',  // Sky 400
+                        clincal_danger: '#F87171'   // Red 400
                     }
                 }
             }
@@ -28,48 +28,131 @@
     </script>
     
     <style>
-        body {
-            background-color: theme('colors.clincal_bg');
-            color: #E2E8F0; /* Slate 200 */
+        /* --- Dark Mode (Default) --- */
+        .dark body {
+            background-color: #0F172A;
+            color: #E2E8F0;
         }
-        /* Glassmorphism utilities */
-        .glass-panel {
+        /* --- Light Mode --- */
+        body {
+            background-color: #F8FAFC;
+            color: #1E293B;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Glassmorphism - Dark */
+        .dark .glass-panel {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
         }
+        /* Glassmorphism - Light */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
         .animate-pulse-slow {
             animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-        /* Custom Scrollbar for clinical feel */
+
+        /* Theme toggle button */
+        .theme-toggle {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .theme-toggle .toggle-dot {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .theme-toggle.active .toggle-dot {
+            transform: translateX(24px);
+        }
+
+        /* Confidence Ring */
+        .confidence-ring {
+            transform: rotate(-90deg);
+        }
+        .confidence-ring circle {
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        .dark ::-webkit-scrollbar { width: 8px; }
+        .dark ::-webkit-scrollbar-track { background: transparent; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748B; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748B; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        /* Smooth entry animation */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.5s ease-out forwards;
+        }
     </style>
 </head>
 <body class="min-h-screen antialiased selection:bg-clincal_accent selection:text-white"
       x-data="diagnosisApp()">
 
     <!-- Header -->
-    <header class="sticky top-0 z-50 glass-panel border-b border-white/10 mx-auto w-full px-6 py-4 flex justify-between items-center bg-clincal_bg/80">
+    <header class="sticky top-0 z-50 glass-panel border-b dark:border-white/10 border-slate-200 mx-auto w-full px-6 py-4 flex justify-between items-center dark:bg-[#0F172A]/80 bg-white/80">
         <div class="flex items-center gap-3">
             <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-clincal_accent to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
             </div>
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-white">SensiNet<span class="text-clincal_accent">.AI</span></h1>
-                <p class="text-xs text-slate-400 font-medium">Mammography Analysis Engine</p>
+                <h1 class="text-xl font-bold tracking-tight dark:text-white text-slate-900">SensiNet<span class="text-clincal_accent">.AI</span></h1>
+                <p class="text-xs dark:text-slate-400 text-slate-500 font-medium">Mammography Analysis Engine</p>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <span class="flex h-3 w-3 relative">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-            </span>
-            <span class="text-sm text-slate-300 font-medium">Model Active (AUC: 0.926)</span>
+        <div class="flex items-center gap-5">
+            <!-- Model Status Indicator -->
+            <div class="hidden sm:flex items-center gap-2">
+                <span class="flex h-3 w-3 relative">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                <span class="text-sm dark:text-slate-300 text-slate-600 font-medium">Model Active (AUC: 0.926)</span>
+            </div>
+
+            <!-- Dark Mode Toggle -->
+            <div class="theme-toggle dark:bg-slate-700 bg-slate-200"
+                 :class="{ 'active': darkMode }"
+                 @click="darkMode = !darkMode"
+                 role="button"
+                 aria-label="Toggle dark mode">
+                <div class="toggle-dot dark:bg-slate-900 bg-white shadow-md">
+                    <!-- Sun icon (light mode) -->
+                    <svg x-show="!darkMode" class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path></svg>
+                    <!-- Moon icon (dark mode) -->
+                    <svg x-show="darkMode" class="w-3.5 h-3.5 text-blue-300" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -77,16 +160,16 @@
         
         <!-- Pre-Analysis State: File Upload -->
         <section x-show="!hasResult && !isAnalyzing" x-transition.duration.500ms class="mt-12">
-            <div class="glass-panel p-12 text-center max-w-3xl mx-auto border-dashed border-2 border-slate-600 hover:border-clincal_accent transition-colors duration-300 relative overflow-hidden group">
+            <div class="glass-panel p-12 text-center max-w-3xl mx-auto border-dashed border-2 dark:border-slate-600 border-slate-300 hover:border-clincal_accent dark:hover:border-clincal_accent transition-colors duration-300 relative overflow-hidden group">
                 <input type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" id="fileInput" @change="handleFileUpload" accept="image/png, image/jpeg">
                 
                 <div class="flex justify-center mb-6">
-                    <div class="h-20 w-20 rounded-2xl bg-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
+                    <div class="h-20 w-20 rounded-2xl dark:bg-slate-800 bg-slate-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
                         <svg class="w-10 h-10 text-clincal_accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                     </div>
                 </div>
-                <h2 class="text-3xl font-bold text-white mb-4">Upload Mammogram</h2>
-                <p class="text-slate-400 mb-8 max-w-md mx-auto leading-relaxed">Drag and drop a PNG or JPEG mammography scan to securely analyze the tissue for malignant indicators.</p>
+                <h2 class="text-3xl font-bold dark:text-white text-slate-800 mb-4">Upload Mammogram</h2>
+                <p class="dark:text-slate-400 text-slate-500 mb-8 max-w-md mx-auto leading-relaxed">Drag and drop a PNG or JPEG mammography scan to securely analyze the tissue for malignant indicators.</p>
                 <button class="bg-clincal_accent text-slate-900 font-semibold px-8 py-3 rounded-xl hover:bg-sky-300 transition-all duration-300 shadow-[0_0_20px_rgba(56,189,248,0.3)]">Browse Files</button>
             </div>
         </section>
@@ -95,7 +178,7 @@
         <section x-show="isAnalyzing" class="flex flex-col items-center justify-center py-32" x-transition>
             <div class="relative w-32 h-32 mb-8">
                 <!-- Outer ring -->
-                <div class="absolute inset-0 rounded-full border-4 border-slate-700"></div>
+                <div class="absolute inset-0 rounded-full border-4 dark:border-slate-700 border-slate-200"></div>
                 <!-- Inner spinning ring -->
                 <div class="absolute inset-0 rounded-full border-4 border-clincal_accent border-t-transparent animate-spin"></div>
                 <!-- Center icon -->
@@ -103,19 +186,19 @@
                     <svg class="w-12 h-12 text-clincal_accent animate-pulse-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
                 </div>
             </div>
-            <h3 class="text-2xl font-semibold text-white tracking-widest uppercase mb-2">Analyzing Scan</h3>
-            <p class="text-slate-400">Running Xception Dual-Stream Features & Grad-CAM Extraction...</p>
+            <h3 class="text-2xl font-semibold dark:text-white text-slate-800 tracking-widest uppercase mb-2">Analyzing Scan</h3>
+            <p class="dark:text-slate-400 text-slate-500">Running Xception Dual-Stream Features & Grad-CAM Extraction...</p>
         </section>
 
         <!-- Result Dashboard State -->
         <section x-show="hasResult && !isAnalyzing" x-transition.duration.700ms style="display: none;">
             
-            <div class="flex justify-between items-end mb-8">
+            <div class="flex justify-between items-end mb-8 animate-slide-up">
                 <div>
-                    <h2 class="text-3xl font-bold text-white tracking-tight">Diagnostic Summary</h2>
-                    <p class="text-slate-400 mt-1">Analysis complete. Review XAI overlays and statistics below.</p>
+                    <h2 class="text-3xl font-bold dark:text-white text-slate-800 tracking-tight">Diagnostic Summary</h2>
+                    <p class="dark:text-slate-400 text-slate-500 mt-1">Analysis complete. Review XAI overlays and statistics below.</p>
                 </div>
-                <button @click="resetApp()" class="px-5 py-2.5 rounded-lg glass-panel text-sm font-medium hover:bg-slate-700/50 transition-colors flex items-center gap-2">
+                <button @click="resetApp()" class="px-5 py-2.5 rounded-lg glass-panel text-sm font-medium dark:hover:bg-slate-700/50 hover:bg-slate-100 transition-colors flex items-center gap-2 dark:text-slate-300 text-slate-600">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     New Analysis
                 </button>
@@ -127,16 +210,16 @@
                 <div class="lg:col-span-8 space-y-6">
                     
                     <!-- Alert Banner -->
-                    <div class="glass-panel p-5 flex items-start gap-4 border-l-4" :class="result.prediction === 'Malignant' ? 'border-l-clincal_danger bg-red-400' : 'border-l-emerald-600 bg-emerald-400'">
-                        <div class="p-2 rounded-lg" :class="result.prediction === 'Malignant' ? 'bg-red-500/20 text-slate-900' : 'bg-emerald-500/20 text-slate-900'">
+                    <div class="glass-panel p-5 flex items-start gap-4 border-l-4" :class="result.prediction === 'Malignant' ? 'border-l-clincal_danger dark:bg-red-500/20 bg-red-50' : 'border-l-emerald-500 dark:bg-emerald-500/20 bg-emerald-50'">
+                        <div class="p-2 rounded-lg" :class="result.prediction === 'Malignant' ? 'bg-red-500/20 text-red-500 dark:text-red-400' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'">
                             <svg x-show="result.prediction === 'Malignant'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                             <svg x-show="result.prediction === 'Benign'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
                         <div>
-                            <h3 class="text-xl font-bold text-slate-900 flex items-center gap-3">
+                            <h3 class="text-xl font-bold flex items-center gap-3" :class="result.prediction === 'Malignant' ? 'text-red-700 dark:text-red-300' : 'text-emerald-700 dark:text-emerald-300'">
                                 <span x-text="result.prediction === 'Malignant' ? 'High Risk Finding Detected' : 'No Malignant Findings'"></span>
                             </h3>
-                            <p class="text-slate-900 font-medium mt-1 text-sm leading-relaxed" x-text="result.prediction === 'Malignant' ? 'The model has identified anomalous regions consistent with malignancy. Please review the XAI Grad-CAM overlay.' : 'The scan appears benign based on current modeling. No malignant structural deformations were strongly activated.'"></p>
+                            <p class="mt-1 text-sm leading-relaxed" :class="result.prediction === 'Malignant' ? 'text-red-600 dark:text-red-200/80' : 'text-emerald-600 dark:text-emerald-200/80'" x-text="result.prediction === 'Malignant' ? 'The model has identified anomalous regions consistent with malignancy. Please review the XAI Grad-CAM overlay.' : 'The scan appears benign based on current modeling. No malignant structural deformations were strongly activated.'"></p>
                         </div>
                     </div>
 
@@ -145,11 +228,11 @@
                         
                         <!-- Original -->
                         <div class="glass-panel p-4 flex flex-col items-center">
-                            <h4 class="w-full text-left text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider flex justify-between">
+                            <h4 class="w-full text-left text-sm font-semibold dark:text-slate-400 text-slate-500 mb-3 uppercase tracking-wider flex justify-between">
                                 Uploaded Scan
-                                <span class="bg-slate-700 text-xs px-2 py-0.5 rounded text-slate-300" x-text="imageType"></span>
+                                <span class="dark:bg-slate-700 bg-slate-200 text-xs px-2 py-0.5 rounded dark:text-slate-300 text-slate-600" x-text="imageType"></span>
                             </h4>
-                            <div class="w-full aspect-[3/4] bg-black rounded-lg overflow-hidden border border-slate-700 relative">
+                            <div class="w-full aspect-[3/4] bg-black rounded-lg overflow-hidden border dark:border-slate-700 border-slate-200 relative">
                                 <img :src="originalImage" class="absolute inset-0 w-full h-full object-contain" alt="Original">
                             </div>
                         </div>
@@ -163,7 +246,7 @@
                                     XAI
                                 </span>
                             </h4>
-                            <div class="w-full aspect-[3/4] bg-black rounded-lg overflow-hidden border border-slate-700 relative">
+                            <div class="w-full aspect-[3/4] bg-black rounded-lg overflow-hidden border dark:border-slate-700 border-slate-200 relative">
                                 <img :src="result.xai_overlay" class="absolute inset-0 w-full h-full object-contain mix-blend-screen" alt="XAI Overlay">
                                 
                                 <!-- Bounding box legend -->
@@ -182,12 +265,12 @@
                                 </div>
                             </div>
                             
-                            <!-- NEW: Clinical Description -->
-                            <div class="mt-4 p-3 bg-slate-800/50 rounded border border-slate-700 w-full text-xs text-slate-300 leading-relaxed text-left">
-                                <strong class="text-white">Interpretability Guide:</strong> The Grad-CAM heatmap visualizations highlight the exact morphological features the neural network used to determine malignancy.
+                            <!-- Clinical Description -->
+                            <div class="mt-4 p-3 dark:bg-slate-800/50 bg-slate-100 rounded border dark:border-slate-700 border-slate-200 w-full text-xs dark:text-slate-300 text-slate-600 leading-relaxed text-left">
+                                <strong class="dark:text-white text-slate-800">Interpretability Guide:</strong> The Grad-CAM heatmap visualizations highlight the exact morphological features the neural network used to determine malignancy.
                                 <ul class="mt-2 space-y-1 ml-1">
-                                    <li><span class="text-blue-400 font-semibold">• Deep Blue:</span> Standard, healthy connective and adipose tissue (Low Activation).</li>
-                                    <li><span class="text-red-400 font-semibold">• Vivid Red:</span> Highly suspicious structural distortions or dense masses (High Activation).</li>
+                                    <li><span class="text-blue-400 dark:text-blue-400 font-semibold">• Deep Blue:</span> Standard, healthy connective and adipose tissue (Low Activation).</li>
+                                    <li><span class="text-red-400 dark:text-red-400 font-semibold">• Vivid Red:</span> Highly suspicious structural distortions or dense masses (High Activation).</li>
                                 </ul>
                             </div>
                         </div>
@@ -197,55 +280,73 @@
                 <!-- Right: Stats Panel (Span 4) -->
                 <div class="lg:col-span-4 space-y-6">
                     
+                    <!-- Bayesian Confidence Ring -->
+                    <div class="glass-panel p-6 flex flex-col items-center">
+                        <h4 class="w-full text-left text-sm font-semibold dark:text-slate-400 text-slate-500 mb-4 uppercase tracking-wider">Bayesian Decision Confidence</h4>
+                        <div class="relative w-36 h-36 mb-3">
+                            <svg class="confidence-ring w-full h-full" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="52" fill="none" class="dark:stroke-slate-700 stroke-slate-200" stroke-width="10"></circle>
+                                <circle cx="60" cy="60" r="52" fill="none" 
+                                    :stroke="result.decision_confidence > 0.80 ? '#10B981' : (result.decision_confidence > 0.60 ? '#F59E0B' : '#EF4444')"
+                                    stroke-width="10" 
+                                    stroke-linecap="round"
+                                    :stroke-dasharray="2 * Math.PI * 52"
+                                    :stroke-dashoffset="2 * Math.PI * 52 * (1 - result.decision_confidence)">
+                                </circle>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-3xl font-bold dark:text-white text-slate-800" x-text="(result.decision_confidence * 100).toFixed(0) + '%'"></span>
+                                <span class="text-[10px] uppercase tracking-wider dark:text-slate-400 text-slate-500 font-semibold">Confidence</span>
+                            </div>
+                        </div>
+                        <p class="text-xs dark:text-slate-500 text-slate-400 text-center leading-relaxed">Monte Carlo Dropout (10-pass) variance-derived epistemic uncertainty.</p>
+                    </div>
+
+                    <!-- Probabilities -->
                     <div class="glass-panel p-6">
-                        <h4 class="text-sm font-semibold text-slate-400 mb-6 uppercase tracking-wider">Inference Probabilities</h4>
+                        <h4 class="text-sm font-semibold dark:text-slate-400 text-slate-500 mb-6 uppercase tracking-wider">Inference Probabilities</h4>
                         
                         <div class="mb-4">
                             <div class="flex justify-between mb-2">
-                                <span class="text-white font-medium">Malignant Probability</span>
-                                <span class="font-bold font-mono" :class="result.prediction === 'Malignant' ? 'text-clincal_danger' : 'text-slate-300'" x-text="(result.probability_malignant * 100).toFixed(1) + '%'"></span>
+                                <span class="dark:text-white text-slate-700 font-medium">Malignant Probability</span>
+                                <span class="font-bold font-mono" :class="result.prediction === 'Malignant' ? 'text-clincal_danger' : 'dark:text-slate-300 text-slate-500'" x-text="(result.probability_malignant * 100).toFixed(1) + '%'"></span>
                             </div>
-                            <div class="w-full bg-slate-700 rounded-full h-2.5">
-                                <div class="h-2.5 rounded-full" :class="result.prediction === 'Malignant' ? 'bg-clincal_danger shadow-[0_0_10px_rgba(248,113,113,0.5)]' : 'bg-slate-500'" :style="`width: ${result.probability_malignant * 100}%`"></div>
+                            <div class="w-full dark:bg-slate-700 bg-slate-200 rounded-full h-2.5">
+                                <div class="h-2.5 rounded-full transition-all duration-1000" :class="result.prediction === 'Malignant' ? 'bg-clincal_danger shadow-[0_0_10px_rgba(248,113,113,0.5)]' : 'bg-slate-400 dark:bg-slate-500'" :style="`width: ${result.probability_malignant * 100}%`"></div>
                             </div>
                         </div>
 
-                        <div class="mb-6">
+                        <div class="mb-2">
                             <div class="flex justify-between mb-2">
-                                <span class="text-white font-medium">Benign Probability</span>
-                                <span class="font-bold font-mono text-emerald-400" x-text="(result.probability_benign * 100).toFixed(1) + '%'"></span>
+                                <span class="dark:text-white text-slate-700 font-medium">Benign Probability</span>
+                                <span class="font-bold font-mono text-emerald-500 dark:text-emerald-400" x-text="(result.probability_benign * 100).toFixed(1) + '%'"></span>
                             </div>
-                            <div class="w-full bg-slate-700 rounded-full h-2.5">
-                                <div class="bg-emerald-500 h-2.5 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]" :style="`width: ${result.probability_benign * 100}%`"></div>
+                            <div class="w-full dark:bg-slate-700 bg-slate-200 rounded-full h-2.5">
+                                <div class="bg-emerald-500 h-2.5 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-all duration-1000" :style="`width: ${result.probability_benign * 100}%`"></div>
                             </div>
-                        </div>
-                        
-                        <div class="pt-4 border-t border-slate-700/50 flex justify-between items-center">
-                            <span class="text-slate-400 text-sm">Bayesian Decision Confidence</span>
-                            <span class="text-white font-semibold text-lg" x-text="(result.decision_confidence * 100).toFixed(1) + '%'"></span>
                         </div>
                     </div>
 
                     <!-- Risk Stratification -->
                     <div class="glass-panel p-6">
-                        <h4 class="text-sm font-semibold text-slate-400 mb-6 uppercase tracking-wider">Risk Stratification Framework</h4>
+                        <h4 class="text-sm font-semibold dark:text-slate-400 text-slate-500 mb-6 uppercase tracking-wider">Risk Stratification Framework</h4>
                         
                         <div class="space-y-4">
                             <template x-for="(value, factor) in result.risk_factors" :key="factor">
                                 <div>
                                     <div class="flex justify-between mb-1">
-                                        <span class="text-xs font-medium text-slate-300 uppercase tracking-wide" x-text="factor"></span>
-                                        <span class="text-xs font-mono text-slate-400" x-text="parseFloat(value).toFixed(0) + '/100'"></span>
+                                        <span class="text-xs font-medium dark:text-slate-300 text-slate-600 uppercase tracking-wide" x-text="factor"></span>
+                                        <span class="text-xs font-mono dark:text-slate-400 text-slate-500" x-text="parseFloat(value).toFixed(0) + '/100'"></span>
                                     </div>
-                                    <div class="w-full bg-slate-800 rounded-full h-1.5 border border-slate-700">
-                                        <div class="h-full rounded-full" :class="value > 75 ? 'bg-red-500' : (value > 40 ? 'bg-orange-400' : 'bg-clincal_accent')" :style="`width: ${Math.min(100, value)}%`"></div>
+                                    <div class="w-full dark:bg-slate-800 bg-slate-200 rounded-full h-1.5 border dark:border-slate-700 border-slate-300">
+                                        <div class="h-full rounded-full transition-all duration-700" :class="value > 75 ? 'bg-red-500' : (value > 40 ? 'bg-orange-400' : 'bg-clincal_accent')" :style="`width: ${Math.min(100, value)}%`"></div>
                                     </div>
                                 </div>
                             </template>
                         </div>
                         
-                        <div class="mt-6 p-4 rounded-lg bg-black/30 border border-white/5 text-xs text-slate-400 leading-relaxed">
-                            <strong class="text-slate-200">Note:</strong> These metrics are derived heuristically from model activations and spatial bounding box extents for demonstration. Requires specialist verification.
+                        <div class="mt-6 p-4 rounded-lg dark:bg-black/30 bg-slate-50 border dark:border-white/5 border-slate-200 text-xs dark:text-slate-400 text-slate-500 leading-relaxed">
+                            <strong class="dark:text-slate-200 text-slate-700">Note:</strong> These metrics are derived heuristically from model activations and spatial bounding box extents for demonstration. Requires specialist verification.
                         </div>
                     </div>
 
@@ -254,6 +355,18 @@
         </section>
         
     </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 pb-8 text-center">
+        <div class="flex items-center justify-center gap-2 mb-2">
+            <div class="h-6 w-6 rounded-lg bg-gradient-to-br from-clincal_accent to-blue-600 flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+            </div>
+            <span class="text-sm font-semibold dark:text-slate-400 text-slate-500">SensiNet<span class="text-clincal_accent">.AI</span></span>
+        </div>
+        <p class="text-xs dark:text-slate-500 text-slate-400">Bayesian Dual-Stream Architecture · AUC 0.926 · CBIS-DDSM</p>
+        <p class="text-xs dark:text-slate-600 text-slate-400 mt-1">Open-Source. Developed in Venezuela. Dedicated to saving lives.</p>
+    </footer>
 
     <script>
         function diagnosisApp() {
