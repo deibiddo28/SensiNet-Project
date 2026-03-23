@@ -151,7 +151,7 @@ if __name__ == '__main__':
         grad_cam = GradCAM(model, target_layer)
         
         # 3. Load Sample Image
-        DATA_PATH = r"C:\Users\dcaiafa\.gemini\antigravity\scratch\dataset"
+        DATA_PATH = r"C:\"
         if os.path.exists(DATA_PATH):
             ds = BreastCancerDataset(DATA_PATH, subset='train', transform=get_transforms('val'))
             
