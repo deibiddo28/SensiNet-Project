@@ -218,8 +218,8 @@ def get_dataloaders(data_dir, batch_size=BATCH_SIZE):
     return DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 
 if __name__ == '__main__':
-    # Unit Test
-    DATA_PATH = r"C:\Users\dcaiafa\.gemini\antigravity\scratch\dataset"
+    # Unit Test - Put the dataset here 
+    DATA_PATH = r"C:\" 
     if os.path.exists(DATA_PATH):
         ds = BreastCancerDataset(DATA_PATH)
         if len(ds) > 0:
