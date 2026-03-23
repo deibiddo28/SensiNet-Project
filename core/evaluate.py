@@ -21,8 +21,9 @@ def evaluate_model():
     Loads the SOTA model and evaluates it on the validation set.
     Generates usage metrics and statistical analysis.
     """
-    data_dir = r"C:\Users\dcaiafa\.gemini\antigravity\scratch\dataset"
-    model_path = r"C:\Users\dcaiafa\.gemini\antigravity\scratch\advanced_model_sota.pt"
+    # --- Data Setup ---
+    data_dir = r"C:\"
+    model_path = r"C:\"
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     print(f"Loading model from {model_path}...")
