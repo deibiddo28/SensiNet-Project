@@ -225,8 +225,8 @@ def train_advanced_model(data_dir, num_epochs=30, batch_size=4):
     model.load_state_dict(best_model_wts)
 
 if __name__ == '__main__':
-    # Default data path
-    DATA_PATH = r"C:\Users\dcaiafa\.gemini\antigravity\scratch\dataset"
+    # Default data path - Change this to your dataset
+    DATA_PATH = r"C:\"
     if os.path.exists(DATA_PATH):
         train_advanced_model(DATA_PATH)
     else:
